@@ -1,31 +1,32 @@
-name: Update VPNGate CSV
+name: Update VPNGate
 
 on:
   schedule:
-    - cron: '0 */6 * * *'  # Every 6 hours
-  workflow_dispatch:
+    - cron: "0 */6 * * *"   # Runs every 6 hours
+  workflow_dispatch:         # Allow manual trigger
 
 jobs:
-  update-csv:
+  update:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
 
-      - name: Download VPNGate CSV
-        run: |
-          curl -L https://www.vpngate.net/api/iphone/ -o vpngate.csv
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
 
-      - name: Configure Git
-        run: |
-          git config --global user.name "GitHub Action"
-          git config --global user.email "actions@github.com"
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run update script
+        run: python update_vpngate.py
 
       - name: Commit and Push
         run: |
-          git add vpngate.csv
-          git commit -m "Auto update VPNGate CSV" || echo "No changes to commit"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add vpngate.csv vpngate.json
+          git commit -m "Auto update VPNGate data"
           git push
-        env:
-          TOKEN: ${{ secrets.GITHUB_TOKEN }}
