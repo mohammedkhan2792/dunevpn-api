@@ -1,19 +1,30 @@
 import requests
+import csv
+import json
 
-url = "https://www.vpngate.net/api/iphone/"
+CSV_URL = "http://www.vpngate.net/api/iphone/"
+CSV_FILE = "vpngate.csv"
+JSON_FILE = "vpngate.json"
 
-response = requests.get(url)
-if response.status_code != 200:
-    raise Exception("Failed to fetch VPNGate data")
+def fetch_and_convert():
+    # Fetch VPNGate CSV (raw text)
+    res = requests.get(CSV_URL, timeout=30)
+    res.raise_for_status()
+    
+    # Clean the response (remove comments starting with # and *)
+    raw = "\n".join([line for line in res.text.splitlines() if not line.startswith("#") and line.strip()])
+    
+    # Save CSV
+    with open(CSV_FILE, "w", encoding="utf-8") as f:
+        f.write(raw)
+    
+    # Convert CSV → JSON
+    reader = csv.DictReader(raw.splitlines())
+    data = list(reader)
+    
+    with open(JSON_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
 
-raw = response.text
-parts = raw.split("#")
-if len(parts) < 2:
-    raise Exception("Invalid data format")
-
-csv_data = parts[1].replace("*", "").strip()
-
-with open("vpngate.csv", "w", encoding="utf-8") as f:
-    f.write(csv_data)
-
-print("VPN CSV updated successfully.")
+if __name__ == "__main__":
+    fetch_and_convert()
+    print("✅ Updated vpngate.csv and vpngate.json")
