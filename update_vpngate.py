@@ -2,7 +2,7 @@ import requests
 import csv
 import json
 
-CSV_URL = "http://www.vpngate.net/api/iphone/"
+CSV_URL = "https://www.vpngate.net/api/iphone/"
 CSV_FILE = "vpngate.csv"
 JSON_FILE = "vpngate.json"
 
